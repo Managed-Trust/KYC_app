@@ -1,0 +1,29 @@
+{
+  "canisters": {
+    "kyc_canister_backend": {
+      "main": "src/kyc_canister_backend/main.mo",
+      "type": "motoko"
+    },
+    "kyc_canister_frontend": {
+      "dependencies": [
+        "kyc_canister_backend"
+      ],
+      "frontend": {
+        "entrypoint": "src/kyc_canister_frontend/src/index.html"
+      },
+      "source": [
+        "src/kyc_canister_frontend/assets",
+        "dist/kyc_canister_frontend/"
+      ],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
