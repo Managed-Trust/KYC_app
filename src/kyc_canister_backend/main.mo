@@ -111,7 +111,7 @@ actor KYC_Canister {
         given_name : Text;
         birth_date : Text; // ISO format
         age_over_18 : Bool;
-        role:Text;
+        role : Text;
         // Optional fields
         age_over_NN : ?Bool;
         age_in_years : ?Nat;
@@ -181,5 +181,91 @@ actor KYC_Canister {
     public query func listCustomers() : async [Customer] {
         let ids = Iter.toArray(map.vals());
         return ids;
+    };
+
+    public shared (msg) func setRole(id : Text, setRole : Text) : async Text {
+        switch (map.get(id)) {
+            case (null) {
+                return "User profile does not exist";
+            };
+            case (?value) {
+                let updatedProfile = {
+                    value with
+                    role = setRole;
+                };
+                map.put(id, updatedProfile);
+                return "Profile updated";
+            };
+        };
+    };
+
+    // Function to update customer information
+    public func updateCustomer(id : Text, updatedCustomer : Customer) : async Text {
+        switch (map.get(id)) {
+            case (null) {
+                return "User profile does not exist";
+            };
+            case (?value) {
+                map.put(id, updatedCustomer);
+                return "Customer updated successfully.";
+            };
+        };
+    };
+
+    // Function to delete a customer
+    public func deleteCustomer(id : Text) : async Text {
+        switch (map.get(id)) {
+            case (null) {
+                return "User profile does not exist";
+            };
+            case (?value) {
+                map.delete(id);
+                return "Customer deleted successfully.";
+            };
+        };
+    };
+
+    // // Function to send email to a customer (mock implementation)
+    public func sendEmail(id : Text, subject : Text, body : Text) : async Text {
+        switch (map.get(id)) {
+            case (null) {
+                return "User profile does not exist";
+            };
+            case (?value) {
+                Debug.print("Sending email to " # id # " with subject: " # subject # " and body: " # body);
+                return "Email sent successfully.";
+            };
+        };
+    };
+
+    // // Function to check if the customer is an admin
+    public query func isAdmin(id : Text) : async Bool {
+        switch (map.get(id)) {
+            case (null) {
+                return false;
+            };
+            case (?value) {
+                return value.role == "Admin";
+            };
+        };
+    };
+
+    // // Function to check if the customer is a registered user
+    public query func isRegisteredUser(id : Text) : async Bool {
+        switch (map.get(id)) {
+            case (null) {
+                return false;
+            };
+            case (?value) {
+                return value.role == "Registered User";
+            };
+        };
+    };
+
+    system func preupgrade() {
+        mapEntries := Iter.toArray(map.entries());
+    };
+    system func postupgrade() {
+        map := HashMap.fromIter<Text, Customer>(mapEntries.vals(), 1, Text.equal, Text.hash);
     };
 };
