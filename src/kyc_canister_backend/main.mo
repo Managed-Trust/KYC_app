@@ -151,8 +151,24 @@ actor KYC_Canister {
     // Function to add a new customer
     public func addCustomer(newCustomer : Customer) : async Text {
 
-        map.put(newCustomer.id, newCustomer);
-        return "Customer added successfully.";
+        switch (map.get(newCustomer.id)) {
+            case (null) {
+                if (newCustomer.role == "") {
+                    return "Role cannot be empty.";
+                };
+                if (newCustomer.phone == "" or newCustomer.identityNumber == "") {
+                    return "Phone number and identity number cannot be empty.";
+                };
+                map.put(newCustomer.id, newCustomer);
+                return "Customer added successfully.";
+            };
+            case (?value) {
+
+                return "Customer with this ID already exists.";
+
+            };
+        };
+
     };
 
     // Function to verify a customer
@@ -183,18 +199,22 @@ actor KYC_Canister {
         return ids;
     };
 
+    // Function to set the role of a customer
     public shared (msg) func setRole(id : Text, setRole : Text) : async Text {
         switch (map.get(id)) {
             case (null) {
-                return "User profile does not exist";
+                return "User profile does not exist.";
             };
             case (?value) {
+                if (setRole == "") {
+                    return "Role cannot be empty.";
+                };
                 let updatedProfile = {
                     value with
                     role = setRole;
                 };
                 map.put(id, updatedProfile);
-                return "Profile updated";
+                return "Role updated.";
             };
         };
     };
@@ -260,6 +280,39 @@ actor KYC_Canister {
                 return value.role == "Registered User";
             };
         };
+    };
+
+    public query func getCustomersByRole(role : Text) : async [Customer] {
+        let customers = Iter.filter<Customer>(
+            map.vals(),
+            func(customer) : Bool {
+                customer.role == role;
+            },
+        );
+        return Iter.toArray(customers);
+    };
+
+    // Function to check if a customer is verified
+    public query func isVerified(id : Text) : async Bool {
+        switch (map.get(id)) {
+            case (null) {
+                return false;
+            };
+            case (?value) {
+                return value.verified;
+            };
+        };
+    };
+
+    // Function to get a list of verified customers
+    public query func getVerifiedCustomers() : async [Customer] {
+        let verifiedCustomers = Iter.filter<Customer>(
+            map.vals(),
+            func(customer) : Bool {
+                customer.verified;
+            },
+        );
+        return Iter.toArray(verifiedCustomers);
     };
 
     system func preupgrade() {
