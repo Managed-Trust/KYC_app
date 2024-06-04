@@ -1,4 +1,3 @@
-
 import Principal "mo:base/Principal";
 import Debug "mo:base/Debug";
 import Cycles "mo:base/ExperimentalCycles";
@@ -63,6 +62,9 @@ actor KYC_Canister {
     private stable var mapEntries : [(Text, Customer)] = [];
     var map = HashMap.HashMap<Text, Customer>(0, Text.equal, Text.hash);
 
+    private stable var mapEntries1 : [(Text, Text)] = [];
+    var map1 = HashMap.HashMap<Text, Text>(0, Text.equal, Text.hash);
+
     // Storage for customer data
     // stable var customers : [Customer] = [];
 
@@ -89,8 +91,15 @@ actor KYC_Canister {
 
     };
 
+    public func addImage(newCustomer : Text) : async Text {
+
+        map1.put("1", newCustomer);
+        return "success";
+    };
+
     // Function to verify a customer
     public func verifyCustomer(id : Text) : async Text {
+        //admin principal id
         switch (map.get(id)) {
             case (null) {
                 return "User profile does not exist";
@@ -119,6 +128,8 @@ actor KYC_Canister {
 
     // Function to set the role of a customer
     public shared (msg) func setRole(id : Text, setRole : Text) : async Text {
+        //admin
+        //operator
         switch (map.get(id)) {
             case (null) {
                 return "User profile does not exist.";
